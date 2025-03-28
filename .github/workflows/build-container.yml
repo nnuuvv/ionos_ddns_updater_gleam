@@ -16,14 +16,14 @@ jobs:
 
       - name: Build image
         run: |
+          IMAGE_ID=$(echo "ghcr.io/nnuuvv/ionos-ddns-updater")
+
           # This strips the git ref prefix from the version.
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
           # This strips the "v" prefix from the tag name.
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          echo VERSION=$VERSION
 
-          IMAGE_ID=ghcr.io/nnuuvv/ionos-ddns-updater
 
           docker build . --file Dockerfile -t "$IMAGE_ID":latest -t $IMAGE_ID:$VERSION
 
@@ -33,5 +33,12 @@ jobs:
 
       - name: Push image
         run: |
+          IMAGE_ID=$(echo "ghcr.io/nnuuvv/ionos-ddns-updater")
+          # This strips the git ref prefix from the version.
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # This strips the "v" prefix from the tag name.
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
           docker push $IMAGE_ID:$VERSION 
           docker push $IMAGE_ID:latest
