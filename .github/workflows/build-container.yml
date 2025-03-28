@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build image
-        run: docker build . --file Dockerfile --tag survey
+        run: docker build . --file Dockerfile --tag ionos-ddns-updater
 
       - name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -32,5 +32,6 @@ jobs:
 
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
-          docker tag survey $IMAGE_ID:$VERSION
+          docker tag ionos-ddns-updater $IMAGE_ID:$VERSION
+          docker tag ionos-ddns-updater $IMAGE_ID:latest
           docker push $IMAGE_ID:$VERSION
