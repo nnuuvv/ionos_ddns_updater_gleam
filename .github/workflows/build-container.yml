@@ -35,3 +35,4 @@ jobs:
           docker tag ionos-ddns-updater $IMAGE_ID:$VERSION
           docker tag ionos-ddns-updater $IMAGE_ID:latest
           docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:latest
