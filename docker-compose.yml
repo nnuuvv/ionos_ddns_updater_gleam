@@ -2,3 +2,6 @@ services:
   ddns-updater:
     build: .
     restart: unless-stopped
+    environment: 
+      API_KEY: "your-api-key"
+      DOMAINS: "comma-seperated-list-of-domains"
