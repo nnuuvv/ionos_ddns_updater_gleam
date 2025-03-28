@@ -1,0 +1,4 @@
+services:
+  ddns-updater:
+    build: .
+    restart: unless-stopped
