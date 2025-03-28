@@ -33,4 +33,4 @@ jobs:
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
           docker tag ionos-ddns-updater $IMAGE_ID:$VERSION
-          docker push ionos-ddns-updater
+          docker push $IMAGE_ID:$VERSION --all-tags
