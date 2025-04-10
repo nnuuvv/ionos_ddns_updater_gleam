@@ -1,0 +1,22 @@
+when: 
+  - event: tag
+    ref: refs/tags/v*
+    branch: main
+
+steps: 
+  - name: build-image
+    image: ubuntu:latest
+    commands: 
+      - export IMAGE_ID=$(echo "ghrc.io/nnuuvv/ionos-ddns-updater")
+        # This strips the "v" prefix from the tag name.
+      - export VERSION=$(echo $CI_COMMIT_TAG | sed -e 's/^v//') 
+      - docker build . --file Dockerfile -t "$$IMAGE_ID":latest -t $$IMAGE_ID:$$VERSION
+
+  - name: log into registry
+    commands:
+      - echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ CI_COMMIT_AUTHOR }} --password-stdin
+
+  - name: push image
+    commands:
+      - docker push $IMAGE_ID:$VERSION
+      - docker push $IMAGE_ID:latest
