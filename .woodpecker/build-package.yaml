@@ -1,3 +1,7 @@
+when:
+  - event: tag
+    ref: refs/tags/v*
+
 steps: 
   publish: 
     image: woodpeckerci/plugin-docker-buildx
@@ -7,6 +11,3 @@ steps:
       username: $CI_COMMIT_AUTHOR
       password:
         from_secret: GITHUB_TOKEN
-      when:
-        - event: tag
-          ref: refs/tags/v*
