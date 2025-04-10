@@ -1,11 +1,12 @@
-publish: 
-  image: woodpeckerci/plugin-docker-buildx
-  settings: 
-    repo: github.com/nnuuvv/ionos_ddns_updater_gleam
-    registry: ghrc.io
-    username: $CI_COMMIT_AUTHOR
-    password:
-      from_secret: GITHUB_TOKEN
-    when:
-      - event: tag
-        ref: refs/tags/v*
+steps: 
+  publish: 
+    image: woodpeckerci/plugin-docker-buildx
+    settings: 
+      repo: github.com/nnuuvv/ionos_ddns_updater_gleam
+      registry: ghrc.io
+      username: $CI_COMMIT_AUTHOR
+      password:
+        from_secret: GITHUB_TOKEN
+      when:
+        - event: tag
+          ref: refs/tags/v*
