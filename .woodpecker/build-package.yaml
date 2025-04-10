@@ -1,7 +1,7 @@
 publish: 
   image: woodpeckerci/plugin-docker-buildx
   settings: 
-    repo: *repo
+    repo: github.com/nnuuvv/ionos_ddns_updater_gleam
     registry: ghrc.io
     username: $CI_COMMIT_AUTHOR
     password:
