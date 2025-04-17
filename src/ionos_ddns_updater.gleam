@@ -1,4 +1,7 @@
-import dyn_dns_types.{type DynDnsResponse, DynDnsEntry}
+import dyn_dns_types.{
+  type DynDnsError, type DynDnsResponse, DynDnsDecodeError, DynDnsEntry,
+  DynDnsResponseNotOk, UpdateError,
+}
 import envoy
 import gleam/erlang/process
 import gleam/http
@@ -22,16 +25,42 @@ pub fn main() {
     |> result.replace_error("DOMAINS environment variable is not set")
   let domains = string.split(domain_block, ",")
 
-  update_dyndns(domains, api_key)
-  |> print_update_result(domains)
+  let update_urls = get_update_urls(domains, api_key)
 
-  repeatedly.call(31_000, Nil, fn(_, _) {
-    update_dyndns(domains, api_key)
-    |> print_update_result(domains)
+  case update_urls {
+    Error(message) ->
+      process.send_abnormal_exit(
+        process.self(),
+        "get_update_urls encountered an error: " <> string.inspect(message),
+      )
+    Ok(_) -> {
+      update_urls
+      |> update_dns_record()
+      |> print_update_result(domains)
 
-    Nil
+      repeatedly.call(31_000, Nil, fn(_, _) {
+        update_dns_record(update_urls)
+        |> print_update_result(domains)
+
+        Nil
+      })
+      process.receive_forever(process.new_subject())
+    }
+  }
+}
+
+fn update_dns_record(
+  result: Result(DynDnsResponse, DynDnsError),
+) -> Result(Response(String), DynDnsError) {
+  result
+  |> result.then(fn(dny_response: DynDnsResponse) {
+    let assert Ok(request) = request.to(dny_response.update_url)
+
+    request
+    |> request.set_method(http.Get)
+    |> httpc.send()
+    |> result.replace_error(UpdateError)
   })
-  process.receive_forever(process.new_subject())
 }
 
 fn print_update_result(
@@ -47,21 +76,6 @@ fn print_update_result(
         <> " domains successfully",
       )
   }
-}
-
-type DynDnsError {
-  DynDnsRequestError
-  DynDnsDecodeError
-  DynDnsResponseNotOk(status_code: Int)
-  UpdateError
-}
-
-fn update_dyndns(
-  domains: List(String),
-  api_key: String,
-) -> Result(Response(String), DynDnsError) {
-  get_update_urls(domains, api_key)
-  |> update_dns_record
 }
 
 fn get_update_urls(
@@ -83,7 +97,7 @@ fn get_update_urls(
       json.to_string(dyn_dns_types.encode_dyn_dns_entry(dyn_entry)),
     )
     |> httpc.send()
-    |> result.replace_error(DynDnsRequestError),
+    |> result.replace_error(DynDnsDecodeError),
   )
 
   case response.status {
@@ -93,18 +107,4 @@ fn get_update_urls(
     }
     status -> Error(DynDnsResponseNotOk(status))
   }
-}
-
-fn update_dns_record(
-  result: Result(DynDnsResponse, DynDnsError),
-) -> Result(Response(String), DynDnsError) {
-  result
-  |> result.then(fn(dny_response: DynDnsResponse) {
-    let assert Ok(request) = request.to(dny_response.update_url)
-
-    request
-    |> request.set_method(http.Get)
-    |> httpc.send()
-    |> result.replace_error(UpdateError)
-  })
 }

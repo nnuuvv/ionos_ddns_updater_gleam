@@ -1,6 +1,13 @@
 import gleam/dynamic/decode
 import gleam/json
 
+pub type DynDnsError {
+  DynDnsRequestError
+  DynDnsDecodeError
+  DynDnsResponseNotOk(status_code: Int)
+  UpdateError
+}
+
 pub type DynDnsResponse {
   DynDnsResponse(
     bulk_id: String,
